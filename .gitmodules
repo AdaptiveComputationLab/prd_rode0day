@@ -1,0 +1,3 @@
+[submodule "apr-evals"]
+	path = apr-evals
+	url = git@github.com:pdreiter/apr-evals.git

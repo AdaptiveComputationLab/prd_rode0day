@@ -4,8 +4,17 @@ INVOKEDIR=$PWD
 SCRIPT=$(realpath ${BASH_SOURCE[0]})
 BASE_DIR=$(dirname -- $(realpath -- $SCRIPT))
 
+if [[ -z $PRD_BASE_DIR ]]; then 
+   echo "Need to set-up PRD infrastructure first!"
+   echo "Exiting."
+   exit -1
+fi
+
+ln -sf $PRD_BASE_DIR/tools/prdtools .
+
 export RODE0DAYPRD_REPO_DIR=$BASE_DIR
 export PRD_RODE0DAY_TOOLS=$BASE_DIR/tools
+export APR_EVAL_DIR=$RODE0DAYPRD_REPO_DIR/apr-evals
 
 RODE0DAY_version="19.11"
 export RODE0DAY_REPO_DIR="$RODE0DAYPRD_REPO_DIR/$RODE0DAY_version"

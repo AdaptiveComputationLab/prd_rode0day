@@ -221,12 +221,14 @@ class rode0day_cfg:
             else:
                 e=os.path.basename(exe)
                 shutil.copy(f"{destpdir}/src/{e}",res_exe)
+            print(f"Obtaining binary information from {res_exe}",flush=True)
             prd_cfg.get_binary_info(destpdir,res_exe)
         
 
         trans_prog=re_sub("<PROG_BASE_DIR>",os.path.realpath(destpdir),prog['prog_info'])
         trans_prog=re_sub("<PROG_NEGTEST_DIR>",neglocaldir,trans_prog)
         bson_file=os.path.join(base_dupdir,f"{pname}.bson")
+        print(f"Generating program BSON file [{bson_file}]",flush=True)
         prog_cfg.writebson(bson_file,trans_prog)
 
         return destpdir,bson_file,trans_prog
@@ -419,6 +421,10 @@ def parse_args():
         help='evaluate PRD Decompilation effectiveness, i.e., apply PRD to all functions of a binary and check test-equivalency to original binary')
     parser.add_argument("--ghidra",dest="ghidra",default=False, action='store_true', 
         help='apply ghidra during decompilation failures (only applicable to CPP-sourced bins)')
+    parser.add_argument("--list-programs",dest="showp",default=False, action='store_true', 
+        help='Show the list of available programs')
+    parser.add_argument("--program",dest="prog",type=str, required=False, default=None,
+        help='Evaluate on specific program')
         
     
     args=parser.parse_args()
@@ -430,20 +436,24 @@ if __name__ == "__main__":
     rode0cfg=rode0day_cfg(args.yml,only_prd=args.only_eval_prd_decomp)
     import random
     random.seed(args.rseed)
-    for p in rode0cfg.getProgramNames():
-        print(f"Configuring {p}")
-        subpcfgs=rode0cfg.setup(destdir=args.build,workdir=args.work,
-            program_name=p,force_binmode=args.forcebin,
-            indep_negs=args.indepnegs)    
-        
-        for subp in subpcfgs:
-            #prdsubpbson,prdsubp,success,summary
-            success,summary=rode0cfg.initialize(seed=random.getrandbits(32),runcfg=subp,
-                byte_thresh=args.bytemin,top_k=args.topk,ghidra=args.ghidra)   
-            
-            print(summary,flush=True)
-            if not success:
-                print(f"[ERROR] Compilation failed for prd subconfiguration for {p}")
-            
-            
+    if args.showp:
+        print('\n'.join(rode0cfg.getProgramNames()))
+    else:
+        for p in rode0cfg.getProgramNames():
+            if args.prog is None or p==args.prog:
+                print(f"Configuring {p}")
+                subpcfgs=rode0cfg.setup(destdir=args.build,workdir=args.work,
+                    program_name=p,force_binmode=args.forcebin,
+                    indep_negs=args.indepnegs)    
+                
+                for subp in subpcfgs:
+                    #prdsubpbson,prdsubp,success,summary
+                    success,summary=rode0cfg.initialize(seed=random.getrandbits(20),runcfg=subp,
+                        byte_thresh=args.bytemin,top_k=args.topk,ghidra=args.ghidra)   
+                    
+                    print(summary,flush=True)
+                    if not success:
+                        print(f"[ERROR] Compilation failed for prd subconfiguration for {p}")
+                
+                
             

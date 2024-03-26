@@ -1,11 +1,13 @@
-#!/usr/env/bin python3
+#!/usr/bin/env python3
 
 import sys, os, copy, subprocess
 sys.path.append(f"{os.getenv('PRD_BASE_DIR')}/tools")
+sys.path.insert(0,f"{os.getenv('PRD_BASE_DIR')}/tools/prdtools")
 sys.path.append(f"{os.getenv('APR_EVAL_DIR')}")
 
-from prdtools import elf,decompile
-#import elf,decompile
+#from prdtools import elf,decompile
+import elf
+import decompile
 from framework import testing
 import prog_cfg
 import prd_cgfl
